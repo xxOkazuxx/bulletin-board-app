@@ -52,3 +52,36 @@ export async function GET() {
         );
     }
 }
+
+/**
+ * 指定されたIDの投稿を削除する
+ * @param request - DELETE リクエスト
+ * @returns 削除結果のレスポンス
+ */
+export async function DELETE(request: Request) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const id = searchParams.get('id');
+
+        if (!id) {
+            return NextResponse.json(
+                { error: '投稿IDが指定されていません' },
+                { status: 400 }
+            );
+        }
+
+        await prisma.post.delete({
+            where: {
+                id: parseInt(id),
+            },
+        });
+
+        return NextResponse.json({ message: '投稿を削除しました' }, { status: 200 });
+    } catch (error) {
+        console.error('Error deleting post:', error);
+        return NextResponse.json(
+            { error: '投稿の削除に失敗しました', details: error instanceof Error ? error.message : '不明なエラー' },
+            { status: 500 }
+        );
+    }
+}

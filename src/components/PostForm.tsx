@@ -1,7 +1,19 @@
 'use client';
 import { useState } from 'react';
 
-const PostForm = () => {
+interface Post {
+    id: number;
+    title: string;
+    content: string;
+    author: string;
+}
+
+interface PostFormProps {
+    post?: Post;  // 編集時に使用
+    onDelete?: (id: number) => Promise<void>;  // 削除ハンドラ
+}
+
+const PostForm = ({ post, onDelete }: PostFormProps) => {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -42,6 +54,38 @@ const PostForm = () => {
         }
     };
 
+    /**
+     * 投稿を削除する
+     * @param id 削除する投稿のID
+     */
+    const handleDelete = async (id: number) => {
+        if (!window.confirm('本当にこの投稿を削除しますか？')) {
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            const response = await fetch(`/api/posts?id=${id}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('削除に失敗しました');
+            }
+
+            if (onDelete) {
+                await onDelete(id);
+            } else {
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('削除に失敗しました');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <form onSubmit={handleSubmit} className="space-y-4 mb-8">
             <div>
@@ -71,13 +115,26 @@ const PostForm = () => {
                 />
             </div>
 
-            <button
-                type="submit"
-                disabled={isLoading}
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:bg-blue-300"
-            >
-                {isLoading ? '投稿中...' : '投稿する'}
-            </button>
+            <div className="flex gap-4">
+                <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:bg-blue-300"
+                >
+                    {isLoading ? '投稿中...' : '投稿する'}
+                </button>
+
+                {post && (
+                    <button
+                        type="button"
+                        onClick={() => handleDelete(post.id)}
+                        disabled={isLoading}
+                        className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 disabled:bg-red-300"
+                    >
+                        {isLoading ? '削除中...' : '削除する'}
+                    </button>
+                )}
+            </div>
         </form>
     );
 };

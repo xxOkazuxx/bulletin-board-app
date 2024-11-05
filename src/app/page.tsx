@@ -5,7 +5,6 @@
 import PostForm from '@/components/PostForm';
 import PostList from '@/components/PostList';
 import prisma from '@/lib/prisma';
-import { Post } from '@/types';
 
 export default async function Home() {
   try {
@@ -18,7 +17,7 @@ export default async function Home() {
     return (
       <main className="max-w-4xl mx-auto p-4">
         <h1 className="text-2xl font-bold mb-6">掲示板</h1>
-        <PostForm />
+        <PostForm post={posts[0]}/>
         <PostList posts={posts} />
       </main>
     );
